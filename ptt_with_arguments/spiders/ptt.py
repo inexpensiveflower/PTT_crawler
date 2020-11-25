@@ -5,20 +5,12 @@ import logging
 import ptt_with_arguments.items as items
 from datetime import datetime
 from scrapy.http import FormRequest
+import sys
 
 
 class PttSpider(scrapy.Spider):
 	name = 'ptt'
 	allowed_domains = ['ptt.cc']
-
-	# 在 __init__() 裡面設定 spider 要接收的參數
-	# 啟動爬蟲的時候要給 category類別、DB名稱、Collection名稱、要爬得最大頁數
-	def __init__(self, category = None, db_collection = None, max_page = None, *args, **kwargs):
-		super(PttSpider, self).__init__(*args, **kwargs)
-		self.start_urls = [f'http://www.ptt.cc/bbs/{category}/index.html',]
-		self.category = category
-		self.db_collection = db_collection
-		self.MAX_PAGES = max_page
 
 	_page = 0
 	# MAX_PAGES = 1
@@ -26,11 +18,26 @@ class PttSpider(scrapy.Spider):
 	_retries = 0
 	MAX_RETRY = 1
 
+	# 在 __init__() 裡面設定 spider 要接收的參數
+	# 啟動爬蟲的時候要給 category類別、DB名稱、Collection名稱、要爬得最大頁數
+	def __init__(self, category = None, db_collection = None, max_page = 10, *args, **kwargs):
+		super(PttSpider, self).__init__(*args, **kwargs)
+
+		if isinstance(category, str):
+			if isinstance(db_collection, str):
+				self.start_urls = [f'http://www.ptt.cc/bbs/{category}/index.html',]
+				self.category = category
+				self.db_collection = db_collection
+				self.MAX_PAGES = max_page
+			else:
+				print("Please assign a database collection to store the items.")
+				sys.exit(0)
+		else:
+			print("Please assign a category to crawl.")
+			sys.exit(0)
+			
+
 	def parse(self, response):
-		# print("~~~~", getattr(self, 'category', ))
-		# print("!!!!", getattr(self, 'db_name', ))
-		# print("####", getattr(self, 'db_collection', ))
-		# print("$$$$", getattr(self, 'MAX_PAGES', ))
 
 		if len(response.xpath('//div[@class="over18-notice"]')) > 0:
 			if self._retries < Ptt.MAX_RETRY:
