@@ -20,7 +20,7 @@ class PttSpider(scrapy.Spider):
 
 	# 在 __init__() 裡面設定 spider 要接收的參數
 	# 啟動爬蟲的時候要給 category類別、DB名稱、Collection名稱、要爬得最大頁數
-	def __init__(self, category = None, db_collection = None, max_page = 10, *args, **kwargs):
+	def __init__(self, category = 'Sex', db_collection = 'Sex_Article_Reply', max_page = 10, *args, **kwargs):
 		super(PttSpider, self).__init__(*args, **kwargs)
 
 		if isinstance(category, str):
@@ -40,7 +40,7 @@ class PttSpider(scrapy.Spider):
 	def parse(self, response):
 
 		if len(response.xpath('//div[@class="over18-notice"]')) > 0:
-			if self._retries < Ptt.MAX_RETRY:
+			if self._retries < PttSpider.MAX_RETRY:
 				self._retries += 1
 				logging.warning('retry {} times...'.format(self._retries))
 				yield FormRequest.from_response(response,
